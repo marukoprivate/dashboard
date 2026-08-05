@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14161a" media="(prefers-color-scheme: dark)">
+<title>Task Dashboard</title>
+<style>
+/* ------------------------------------------------------------------
+   Theme tokens. Light by default, dark via prefers-color-scheme.
+   ------------------------------------------------------------------ */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --text: #16181d;
+  --text-dim: #5c6370;
+  --border: #dcdfe5;
+  --border-strong: #c3c8d1;
+  --accent: #2f6feb;
+  --accent-text: #ffffff;
+  --danger: #c8332b;
+  --danger-bg: #fdeceb;
+  --warn: #9a6206;
+  --warn-bg: #fdf3dc;
+  --ok: #1a7f45;
+  --ok-bg: #e6f5ec;
+  --alert: #8b2fbf;
+  --alert-bg: #f7ebfd;
+  --shadow: 0 1px 2px rgba(16, 20, 30, .06), 0 4px 12px rgba(16, 20, 30, .05);
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --surface: #1c1f25;
+    --surface-2: #23272f;
+    --text: #e8eaed;
+    --text-dim: #9aa1ac;
+    --border: #333944;
+    --border-strong: #454d5a;
+    --accent: #5b90f5;
+    --accent-text: #0d1117;
+    --danger: #ff8078;
+    --danger-bg: #3a1f1e;
+    --warn: #e5b567;
+    --warn-bg: #3a3020;
+    --ok: #62d391;
+    --ok-bg: #16301f;
+    --alert: #d49bf5;
+    --alert-bg: #2e1f3a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .3);
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", "Leelawadee UI", "Helvetica Neue", Arial, sans-serif;
+  padding: 0 0 4rem;
+}
+
+.wrap {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 clamp(.75rem, 3vw, 1.5rem);
+}
+
+/* ---------------- Header ---------------- */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+  margin-bottom: 1.25rem;
+}
+.site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.site-header h1 {
+  font-size: clamp(1.15rem, 4vw, 1.5rem);
+  margin: 0;
+  letter-spacing: -.01em;
+}
+.site-header .sub {
+  margin: .15rem 0 0;
+  color: var(--text-dim);
+  font-size: .85rem;
+}
+.header-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ---------------- Buttons & controls ---------------- */
+button, .btn {
+  font: inherit;
+  font-size: .92rem;
+  border-radius: 9px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: .6rem .9rem;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+button.small { min-height: 38px; padding: .4rem .7rem; font-size: .85rem; }
+button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+input, select, textarea {
+  font: inherit;
+  width: 100%;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  padding: .6rem .7rem;
+  min-height: 44px;
+}
+textarea { min-height: 84px; resize: vertical; }
+label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
+.hint { color: var(--text-dim); font-size: .78rem; margin: .3rem 0 0; font-weight: 400; }
+
+/* ---------------- Cards & panels ---------------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(.9rem, 3vw, 1.25rem);
+  margin-bottom: 1.25rem;
+}
+.panel h2 { margin: 0 0 .85rem; font-size: 1.05rem; }
+
+.grid { display: grid; gap: .85rem; grid-template-columns: 1fr; }
+@media (min-width: 44rem) {
+  .grid.two { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------------- Messages ---------------- */
+.msg {
+  border-radius: 10px;
+  padding: .7rem .85rem;
+  font-size: .9rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+}
+.msg.info   { background: var(--surface-2); border-color: var(--border); color: var(--text-dim); }
+.msg.ok     { background: var(--ok-bg);     border-color: var(--ok);     color: var(--ok); }
+.msg.warn   { background: var(--warn-bg);   border-color: var(--warn);   color: var(--warn); }
+.msg.error  { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+
+.callout-alert {
+  background: var(--alert-bg);
+  border: 2px solid var(--alert);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.callout-alert h2 { margin: 0 0 .4rem; font-size: 1rem; color: var(--alert); }
+.callout-alert ul { margin: .5rem 0 0; padding-left: 1.1rem; }
+.callout-alert li { margin-bottom: .25rem; }
+
+.security-note {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  border-radius: 10px;
+  padding: .7rem .85rem;
+  font-size: .85rem;
+  margin-bottom: 1rem;
+}
+.security-note strong { display: block; margin-bottom: .2rem; }
+
+/* ---------------- Task groups ---------------- */
+.group { margin-bottom: 1.75rem; }
+.group-head {
+  display: flex;
+  align-items: baseline;
+  gap: .55rem;
+  margin: 0 0 .2rem;
+  font-size: 1.05rem;
+}
+.group-head .count {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .05rem .5rem;
+}
+.group-blurb { color: var(--text-dim); font-size: .82rem; margin: 0 0 .7rem; }
+.group-empty { color: var(--text-dim); font-size: .88rem; font-style: italic; padding: .3rem 0 .6rem; }
+
+.task {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: .85rem 1rem;
+  margin-bottom: .7rem;
+}
+.task.is-overdue { border-left-color: var(--danger); background: var(--danger-bg); }
+.task.is-attention { border-left-color: var(--alert); border-color: var(--alert); background: var(--alert-bg); }
+.task.is-closed { opacity: .65; }
+
+.task-head { display: flex; gap: .6rem; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.task-title { margin: 0; font-size: 1rem; line-height: 1.35; overflow-wrap: anywhere; }
+.task.is-closed .task-title { text-decoration: line-through; }
+
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.chip {
+  font-size: .74rem;
+  border-radius: 999px;
+  padding: .12rem .55rem;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.chip.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.chip.due-soon { border-color: var(--warn); color: var(--warn); background: var(--warn-bg); }
+.chip.overdue { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); font-weight: 700; }
+
+.badge {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: .18rem .6rem;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.badge.pending         { color: var(--text-dim); border-color: var(--border-strong); background: var(--surface-2); }
+.badge.in_progress     { color: var(--warn);   border-color: var(--warn);   background: var(--warn-bg); }
+.badge.done            { color: var(--ok);     border-color: var(--ok);     background: var(--ok-bg); }
+.badge.blocked         { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
+.badge.needs_new_agent { color: var(--alert);  border-color: var(--alert);  background: var(--alert-bg); }
+.badge.cancelled       { color: var(--text-dim); border-color: var(--border); background: transparent; }
+
+.task .details,
+.task .result-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: .6rem 0 0;
+  font-size: .9rem;
+}
+.task .details { color: var(--text-dim); }
+.task .block {
+  margin-top: .65rem;
+  padding: .55rem .7rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: .88rem;
+}
+.task .block h4 { margin: 0 0 .25rem; font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-dim); }
+.task .links { margin-top: .6rem; display: flex; flex-wrap: wrap; gap: .8rem; font-size: .88rem; }
+.task-actions { margin-top: .75rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+a { color: var(--accent); overflow-wrap: anywhere; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-bottom: 1.25rem; }
+.toolbar .search { flex: 1 1 14rem; }
+.checkline { display: flex; align-items: center; gap: .45rem; font-size: .88rem; white-space: nowrap; }
+.checkline input { width: auto; min-height: 0; width: 1.05rem; height: 1.05rem; }
+
+.summary { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+
+.token-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end; }
+.token-row > div:first-child { flex: 1 1 16rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+  padding-top: 1rem;
+  color: var(--text-dim);
+  font-size: .82rem;
+}
+.site-footer p { margin: .25rem 0; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div>
+      <h1>Task Dashboard</h1>
+      <p class="sub">Tasks live in <span class="mono">tasks.json</span>. An hourly cloud agent picks them up and writes results back.</p>
+    </div>
+    <div class="header-actions">
+      <button id="refresh-btn" type="button">Refresh</button>
+      <button id="settings-btn" type="button" aria-expanded="false" aria-controls="settings-panel">Settings</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="status" class="msg info" role="status" aria-live="polite">Starting…</div>
+
+  <!-- Settings / token -------------------------------------------------- -->
+  <section id="settings-panel" class="panel" hidden aria-label="Settings">
+    <h2>GitHub token</h2>
+    <div class="security-note">
+      <strong>This page is public. Do not enter a token on a shared or public computer.</strong>
+      The token is stored only in this browser's <span class="mono">localStorage</span> on this device. It is never written
+      into <span class="mono">tasks.json</span>, into the page source, or into the URL. Anyone who can use this browser
+      profile can use the token. If in doubt, clear it below and revoke it at github.com.
+    </div>
+
+    <div class="token-row">
+      <div>
+        <label for="token-input">Fine-grained personal access token</label>
+        <input id="token-input" type="password" autocomplete="off" autocapitalize="off" autocorrect="off"
+               spellcheck="false" placeholder="github_pat_..." aria-describedby="token-state">
+      </div>
+      <button id="token-save" class="primary" type="button">Save token</button>
+      <button id="token-clear" class="danger" type="button">Clear token</button>
+    </div>
+    <p class="hint" id="token-state">No token stored. The dashboard is read-only.</p>
+    <p class="hint">
+      Needs <strong>Contents: Read and write</strong> (to save tasks) and <strong>Issues: Read and write</strong>
+      (used by the cloud agent) on <span class="mono">marukoprivate/dashboard</span>. See the README for step-by-step setup.
+    </p>
+    <p class="hint" id="diagnostics"></p>
+  </section>
+
+  <!-- Needs-new-agent callout ------------------------------------------- -->
+  <div id="attention" hidden></div>
+
+  <!-- Add task ----------------------------------------------------------- -->
+  <section class="panel" aria-label="Add a task">
+    <h2>Add a task</h2>
+    <form id="task-form" novalidate>
+      <div class="grid">
+        <div>
+          <label for="f-title">Title <span class="hint" style="display:inline">(required)</span></label>
+          <input id="f-title" name="title" type="text" maxlength="200" required
+                 placeholder="Short one-line summary">
+        </div>
+        <div>
+          <label for="f-details">Details</label>
+          <textarea id="f-details" name="details" maxlength="8000"
+                    placeholder="Anything the agent needs to know. Optional."></textarea>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:.85rem">
+        <div>
+          <label for="f-type">Type</label>
+          <select id="f-type" name="type">
+            <option value="do_now">Do now &mdash; action on the next sweep</option>
+            <option value="do_later">Do later &mdash; action after a date</option>
+            <option value="idea">Idea &mdash; debate it, write it up</option>
+            <option value="monitor">Monitor &mdash; re-check on an interval</option>
+            <option value="reminder">Reminder &mdash; just alert me</option>
+          </select>
+          <p class="hint" id="type-blurb"></p>
+        </div>
+
+        <div id="due-field" hidden>
+          <label for="f-due">Due date &amp; time</label>
+          <input id="f-due" name="due_at" type="datetime-local">
+          <p class="hint" id="due-hint">Your local time; stored as UTC.</p>
+        </div>
+
+        <div id="interval-field" hidden>
+          <label for="f-interval">Check every (hours)</label>
+          <input id="f-interval" name="check_interval_hours" type="number" min="1" step="1" placeholder="1">
+          <p class="hint">Leave empty for the default of 1 hour.</p>
+        </div>
+
+        <div>
+          <label for="f-repo">Repo URL</label>
+          <input id="f-repo" name="repo_url" type="url" inputmode="url" placeholder="https://github.com/owner/repo">
+          <p class="hint">Optional. The only other repo the agent may touch for this task.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem; display:flex; gap:.5rem; flex-wrap:wrap; align-items:center">
+        <button id="submit-btn" class="primary" type="submit">Add task</button>
+        <span class="hint" id="form-note"></span>
+      </div>
+      <p id="form-error" class="msg error" style="margin-top:.85rem" hidden></p>
+    </form>
+  </section>
+
+  <!-- Filters ------------------------------------------------------------ -->
+  <div class="toolbar">
+    <div class="search">
+      <label for="f-search" style="font-weight:400;color:var(--text-dim)">Search</label>
+      <input id="f-search" type="search" placeholder="Search title, details, result or id" autocomplete="off">
+    </div>
+    <label class="checkline" for="f-show-closed">
+      <input id="f-show-closed" type="checkbox">
+      Show done &amp; cancelled
+    </label>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <div id="task-list"></div>
+
+</main>
+
+<footer class="site-footer wrap">
+  <p>
+    Source of truth:
+    <a href="https://github.com/marukoprivate/dashboard/blob/main/tasks.json" rel="noopener">tasks.json</a>
+    &middot;
+    <a href="https://github.com/marukoprivate/dashboard/issues" rel="noopener">Issues</a>
+    &middot;
+    <a href="https://github.com/marukoprivate/dashboard" rel="noopener">Repository</a>
+  </p>
+  <p>Static page, no backend. Every change is a commit made straight from your browser to GitHub.</p>
+</footer>
+
+<script>
+'use strict';
+
+/* ==================================================================
+   Configuration
+   ================================================================== */
+var OWNER = 'marukoprivate';
+var REPO = 'dashboard';
+var BRANCH = 'main';
+var FILE_PATH = 'tasks.json';
+var CONTENTS_URL = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/contents/' + FILE_PATH;
+var ISSUE_URL_BASE = 'https://github.com/' + OWNER + '/' + REPO + '/issues/';
+var TOKEN_STORAGE_KEY = 'dashboard.githubToken';
+
+/* 1 initial attempt + 2 retries, as required for stale-sha conflicts. */
+var MAX_SAVE_ATTEMPTS = 3;
+var DEFAULT_MONITOR_INTERVAL_HOURS = 1;
+
+var TYPES = [
+  { id: 'do_now',   label: 'Do now',   blurb: 'Actioned on the next hourly sweep. Top priority.' },
+  { id: 'do_later', label: 'Do later', blurb: 'Waits until its due date has passed, then gets actioned.' },
+  { id: 'monitor',  label: 'Monitor',  blurb: 'Re-checked on a fixed interval, indefinitely.' },
+  { id: 'idea',     label: 'Idea',     blurb: 'Debated and brainstormed. Produces a written write-up, not executed work.' },
+  { id: 'reminder', label: 'Reminder', blurb: 'No agent work. You just get an alert when the due date arrives.' }
+];
+var TYPE_IDS = TYPES.map(function (t) { return t.id; });
+var CLOSED_STATUSES = ['done', 'cancelled'];
+
+/* Thai round-trip probe for the base64 helpers. Bare btoa() throws on these
+   characters and bare atob() mangles them, so the helpers below go through
+   TextEncoder/TextDecoder. selfTest() proves the path at page load. */
+var UTF8_PROBE = 'ทดสอบภาษาไทย';
+
+/* ==================================================================
+   State
+   ================================================================== */
+var state = {
+  doc: null,            // parsed tasks.json ({version, updated_at, tasks})
+  sha: null,            // blob sha of the file as last seen; required to write
+  token: null,
+  fileMissing: false,   // repo/file does not exist yet
+  corrupt: false,       // remote file is not valid JSON - writing would clobber it
+  loadError: null,
+  loading: false,
+  busy: false,
+  search: '',
+  showClosed: false
+};
+
+/* ==================================================================
+   UTF-8 safe base64 (both directions)
+   ==================================================================
+   btoa() only accepts code points 0-255 and atob() only produces them, so the
+   string is converted to/from UTF-8 bytes first. btoa() below is therefore
+   never handed raw non-ASCII text - only a byte-per-char binary string. */
+function encodeBase64Utf8(text) {
+  var bytes = new TextEncoder().encode(text);
+  var binary = '';
+  var CHUNK = 0x8000; // keep apply() below the argument-count limit
+  for (var i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
+function decodeBase64Utf8(b64) {
+  var clean = String(b64).replace(/\s+/g, ''); // GitHub wraps base64 at 60 chars
+  var binary = atob(clean);
+  var bytes = new Uint8Array(binary.length);
+  for (var i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i) & 0xff;
+  }
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function selfTest() {
+  try {
+    return decodeBase64Utf8(encodeBase64Utf8(UTF8_PROBE)) === UTF8_PROBE;
+  } catch (e) {
+    return false;
+  }
+}
+
+/* ==================================================================
+   Small helpers
+   ================================================================== */
+function $(id) { return document.getElementById(id); }
+
+function esc(value) {
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* Only ever emit http(s) links, so a hand-edited tasks.json cannot inject
+   a javascript: URL into the page. */
+function safeUrl(url) {
+  if (typeof url !== 'string') return null;
+  var trimmed = url.trim();
+  return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : null;
+}
+
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+function pad3(n) { return n < 10 ? '00' + n : (n < 100 ? '0' + n : String(n)); }
+function nowIso() { return new Date().toISOString(); }
+function utcStamp(d) { return String(d.getUTCFullYear()) + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate()); }
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function parseIso(iso) {
+  if (!iso || typeof iso !== 'string') return null;
+  var ms = Date.parse(iso);
+  return isNaN(ms) ? null : ms;
+}
+
+function formatDateTime(iso) {
+  var ms = parseIso(iso);
+  if (ms === null) return String(iso);
+  try {
+    return new Date(ms).toLocaleString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  } catch (e) {
+    return new Date(ms).toISOString();
+  }
+}
+
+function relativeText(iso) {
+  var ms = parseIso(iso);
+  if (ms === null) return '';
+  var diff = ms - Date.now();
+  var past = diff < 0;
+  var mins = Math.round(Math.abs(diff) / 60000);
+  var text;
+  if (mins < 1) text = 'less than a minute';
+  else if (mins < 60) text = mins + (mins === 1 ? ' minute' : ' minutes');
+  else if (mins < 1440) { var h = Math.round(mins / 60); text = h + (h === 1 ? ' hour' : ' hours'); }
+  else { var d = Math.round(mins / 1440); text = d + (d === 1 ? ' day' : ' days'); }
+  return past ? text + ' ago' : 'in ' + text;
+}
+
+function typeMeta(id) {
+  for (var i = 0; i < TYPES.length; i++) { if (TYPES[i].id === id) return TYPES[i]; }
+  return { id: id, label: id || 'unknown', blurb: '' };
+}
+
+function isClosed(task) { return CLOSED_STATUSES.indexOf(task.status) !== -1; }
+
+function isOverdue(task) {
+  if (isClosed(task)) return false;
+  if (task.type !== 'reminder' && task.type !== 'do_later') return false;
+  var ms = parseIso(task.due_at);
+  return ms !== null && ms <= Date.now();
+}
+
+function monitorIsDue(task) {
+  if (task.type !== 'monitor' || isClosed(task)) return false;
+  var interval = Number(task.check_interval_hours);
+  if (!isFinite(interval) || interval <= 0) interval = DEFAULT_MONITOR_INTERVAL_HOURS;
+  var last = parseIso(task.last_checked_at);
+  if (last === null) return true; // never checked
+  return (Date.now() - last) >= interval * 3600000;
+}
+
+/* ==================================================================
+   Token storage (localStorage only - never committed, never in the URL)
+   ================================================================== */
+function readStoredToken() {
+  try {
+    return window.localStorage.getItem(TOKEN_STORAGE_KEY) || null;
+  } catch (e) {
+    return null; // private mode / storage disabled
+  }
+}
+
+function writeStoredToken(token) {
+  try {
+    if (token) window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function maskToken(token) {
+  if (!token) return '';
+  var tail = token.length > 4 ? token.slice(-4) : '';
+  return '••••••••••••' + tail;
+}
+
+function renderTokenState() {
+  var el = $('token-state');
+  if (state.token) {
+    el.innerHTML = 'Token stored in this browser: <span class="mono">' + esc(maskToken(state.token)) +
+      '</span>. Saving tasks is enabled.';
+  } else {
+    el.textContent = 'No token stored. The dashboard is read-only.';
+  }
+  $('token-clear').disabled = !state.token;
+}
+
+/* ==================================================================
+   GitHub API
+   ================================================================== */
+function apiHeaders(isWrite) {
+  var h = {
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  if (state.token) h['Authorization'] = 'Bearer ' + state.token;
+  if (isWrite) {
+    h['Content-Type'] = 'application/json';
+  } else {
+    /* Freshness. A literal "Cache-Control: no-cache" request header cannot be
+       used here: it is not in GitHub's Access-Control-Allow-Headers list, so the
+       CORS preflight fails and the read never happens. The same effect is had
+       with cache:'no-store' (bypasses the browser cache) plus an If-None-Match
+       that can never match (bypasses GitHub's conditional-response cache).
+       If-None-Match *is* on GitHub's allow list. */
+    h['If-None-Match'] = '"no-cache-' + Date.now() + '"';
+  }
+  return h;
+}
+
+function readErrorBody(res) {
+  return res.text().then(function (text) {
+    try { return JSON.parse(text); } catch (e) { return { message: text.slice(0, 300) }; }
+  }).catch(function () { return {}; });
+}
+
+function describeHttpError(res) {
+  return readErrorBody(res).then(function (body) {
+    var msg = (body && body.message) || res.statusText || ('HTTP ' + res.status);
+    var remaining = res.headers.get('x-ratelimit-remaining');
+    var reset = res.headers.get('x-ratelimit-reset');
+
+    if ((res.status === 403 || res.status === 429) &&
+        (remaining === '0' || /rate limit/i.test(msg))) {
+      var when = reset ? formatDateTime(new Date(Number(reset) * 1000).toISOString()) : null;
+      return 'GitHub API rate limit reached' +
+        (state.token ? '' : ' for your IP address (60 requests per hour without a token)') + '.' +
+        (when ? ' It resets at ' + when + '.' : '') +
+        (state.token ? '' : ' Saving a personal access token in Settings raises the limit to 5,000 requests per hour.');
+    }
+    if (res.status === 401) {
+      return 'GitHub rejected the token (401). It may be expired, revoked or mistyped. ' +
+        'Create a new fine-grained token and paste it again in Settings.';
+    }
+    if (res.status === 403) {
+      return 'GitHub refused the request (403): ' + msg +
+        ' Check the token grants "Contents: Read and write" on ' + OWNER + '/' + REPO + '.';
+    }
+    if (res.status === 404) {
+      return 'Not found (404): ' + msg +
+        ' If the repo is private to the token, the token needs access to ' + OWNER + '/' + REPO + '.';
+    }
+    return 'GitHub returned HTTP ' + res.status + ': ' + msg;
+  });
+}
+
+function emptyDoc() {
+  return { version: 1, updated_at: nowIso(), tasks: [] };
+}
+
+/* Accept whatever is in the repo but guarantee the shape the page relies on.
+   Unknown top-level keys are preserved so this page never drops data written
+   by the cloud agent. */
+function normalizeDoc(doc) {
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+    throw new Error('tasks.json must be a JSON object.');
+  }
+  if (!Array.isArray(doc.tasks)) {
+    throw new Error('tasks.json is missing its "tasks" array.');
+  }
+  if (typeof doc.version !== 'number') doc.version = 1;
+  if (typeof doc.updated_at !== 'string') doc.updated_at = nowIso();
+  return doc;
+}
+
+function fetchDoc() {
+  return fetch(CONTENTS_URL + '?ref=' + encodeURIComponent(BRANCH), {
+    method: 'GET',
+    cache: 'no-store',
+    headers: apiHeaders(false)
+  }).then(function (res) {
+    if (res.status === 404) {
+      return readErrorBody(res).then(function (body) {
+        return { missing: true, reason: (body && body.message) || 'Not found' };
+      });
+    }
+    if (!res.ok) {
+      return describeHttpError(res).then(function (m) { throw new Error(m); });
+    }
+    return res.json().then(function (payload) {
+      var text = decodeBase64Utf8(payload.content || '');
+      var parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        var err = new Error('tasks.json in the repo is not valid JSON (' + e.message +
+          '). Fix it on GitHub before saving from here - otherwise this page would overwrite it.');
+        err.corrupt = true;
+        throw err;
+      }
+      var doc;
+      try {
+        doc = normalizeDoc(parsed);
+      } catch (e2) {
+        e2.corrupt = true; // wrong shape counts as corrupt: saving would clobber it
+        throw e2;
+      }
+      return { missing: false, doc: doc, sha: payload.sha };
+    });
+  });
+}
+
+function loadTasks(options) {
+  var opts = options || {};
+  state.loading = true;
+  if (!opts.silent) setStatus('Loading tasks from GitHub…', 'info');
+  render();
+
+  return fetchDoc().then(function (result) {
+    state.loadError = null;
+    state.corrupt = false;
+    if (result.missing) {
+      state.fileMissing = true;
+      state.doc = emptyDoc();
+      state.sha = null;
+      if (!opts.silent) {
+        setStatus('No tasks.json in the repo yet (' + result.reason +
+          '). Push the scaffold to GitHub first; after that, adding a task here will create the file.', 'warn');
+      }
+    } else {
+      state.fileMissing = false;
+      state.doc = result.doc;
+      state.sha = result.sha;
+      if (!opts.silent) {
+        var n = state.doc.tasks.length;
+        setStatus('Loaded ' + n + (n === 1 ? ' task' : ' tasks') +
+          '. Last updated ' + formatDateTime(state.doc.updated_at) + '.', 'ok');
+      }
+    }
+  }).catch(function (err) {
+    state.loadError = err.message;
+    state.corrupt = !!err.corrupt;
+    /* A previously loaded document is deliberately kept so the page stays
+       readable during a transient failure. Saving is blocked separately by
+       state.corrupt, so a bad read can never be committed back. */
+    setStatus(err.message, 'error');
+  }).then(function () {
+    state.loading = false;
+    render();
+  });
+}
+
+/* ------------------------------------------------------------------
+   Writing. `mutate` is a pure function applied to a *fresh* copy of the
+   document on every attempt, so a conflict retry re-applies the user's
+   change on top of whatever the cloud agent just committed instead of
+   discarding it.
+   ------------------------------------------------------------------ */
+function saveWithRetry(mutate, commitMessage) {
+  if (!state.token) {
+    return Promise.reject(new Error('A GitHub token is required to save. Open Settings and paste a fine-grained token.'));
+  }
+  if (state.corrupt) {
+    return Promise.reject(new Error('Refusing to save: the tasks.json currently in the repo is not valid JSON. Fix it on GitHub first.'));
+  }
+  if (!state.doc) {
+    return Promise.reject(new Error('Tasks have not loaded yet. Press Refresh and try again.'));
+  }
+
+  function attempt(n) {
+    var next;
+    try {
+      next = mutate(deepClone(state.doc));
+    } catch (e) {
+      return Promise.reject(e);
+    }
+    if (typeof next.version !== 'number') next.version = 1;
+    next.updated_at = nowIso();
+
+    var payload = {
+      message: commitMessage,
+      content: encodeBase64Utf8(JSON.stringify(next, null, 2) + '\n'),
+      branch: BRANCH
+    };
+    if (state.sha) payload.sha = state.sha; // omitted when creating the file
+
+    return fetch(CONTENTS_URL, {
+      method: 'PUT',
+      cache: 'no-store',
+      headers: apiHeaders(true),
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (res.ok) {
+        return res.json().then(function (data) {
+          state.doc = next;
+          state.sha = (data && data.content && data.content.sha) || null;
+          state.fileMissing = false;
+          return state.sha ? next : loadTasks({ silent: true }).then(function () { return next; });
+        });
+      }
+
+      /* A stale sha comes back as 409, and GitHub reports it as 422 too. */
+      if (res.status === 409 || res.status === 422) {
+        return describeHttpError(res).then(function (reason) {
+          if (n >= MAX_SAVE_ATTEMPTS) {
+            throw new Error('Could not save after ' + MAX_SAVE_ATTEMPTS +
+              ' attempts because tasks.json kept changing underneath (' + reason +
+              '). Nothing was lost - your entry is still in the form. Try again in a moment.');
+          }
+          setStatus('tasks.json changed while you were editing. Reloading it and re-applying your change (attempt ' +
+            (n + 1) + ' of ' + MAX_SAVE_ATTEMPTS + ')…', 'warn');
+          /* Re-read, then re-run the same mutation against the fresh document. */
+          return fetchDoc().then(function (result) {
+            if (result.missing) { state.doc = emptyDoc(); state.sha = null; state.fileMissing = true; }
+            else { state.doc = result.doc; state.sha = result.sha; state.fileMissing = false; }
+            return attempt(n + 1);
+          });
+        });
+      }
+
+      return describeHttpError(res).then(function (m) { throw new Error(m); });
+    });
+  }
+
+  return attempt(1);
+}
+
+/* ==================================================================
+   Mutations
+   ================================================================== */
+/* IDs are t-<YYYYMMDD>-<3-digit sequence>, unique within the file. The number
+   is recomputed against the freshest document on every save attempt, so a
+   conflict retry cannot produce a duplicate id. */
+function nextTaskId(doc, stamp) {
+  var prefix = 't-' + stamp + '-';
+  var taken = {};
+  var highest = 0;
+  (doc.tasks || []).forEach(function (t) {
+    if (!t || typeof t.id !== 'string') return;
+    taken[t.id] = true;
+    if (t.id.indexOf(prefix) === 0) {
+      var n = parseInt(t.id.slice(prefix.length), 10);
+      if (!isNaN(n) && n > highest) highest = n;
+    }
+  });
+  var seq = highest + 1;
+  var id = prefix + pad3(seq);
+  while (taken[id]) { seq++; id = prefix + pad3(seq); }
+  return id;
+}
+
+function makeAddMutation(draft) {
+  var createdAt = nowIso();
+  var stamp = utcStamp(new Date(createdAt));
+  return function (doc) {
+    var task = {
+      id: nextTaskId(doc, stamp),
+      title: draft.title,
+      details: draft.details,
+      type: draft.type,
+      status: 'pending',
+      created_at: createdAt,
+      created_by: 'web',
+      due_at: draft.due_at,
+      check_interval_hours: draft.check_interval_hours,
+      last_checked_at: null,
+      assigned_agent: null,
+      agent_rationale: null,
+      repo_url: draft.repo_url,
+      result: null,
+      issue_number: null,
+      history: [{ at: createdAt, event: 'created via web' }]
+    };
+    doc.tasks.push(task);
+    return doc;
+  };
+}
+
+function makeStatusMutation(taskId, newStatus) {
+  var at = nowIso();
+  return function (doc) {
+    var found = null;
+    (doc.tasks || []).forEach(function (t) { if (t && t.id === taskId) found = t; });
+    if (!found) {
+      throw new Error('Task ' + taskId + ' is no longer in tasks.json - it was removed by another change. Nothing was written.');
+    }
+    if (found.status === newStatus) return doc; // already applied by a previous attempt
+    found.status = newStatus;
+    if (!Array.isArray(found.history)) found.history = [];
+    found.history.push({ at: at, event: 'marked ' + newStatus + ' via web' });
+    return doc;
+  };
+}
+
+/* ==================================================================
+   Rendering
+   ================================================================== */
+function setStatus(message, kind) {
+  var el = $('status');
+  el.textContent = message;
+  el.className = 'msg ' + (kind || 'info');
+  el.hidden = !message;
+}
+
+function setFormError(message) {
+  var el = $('form-error');
+  if (!message) { el.hidden = true; el.textContent = ''; return; }
+  el.hidden = false;
+  el.textContent = message;
+}
+
+function visibleTasks() {
+  if (!state.doc) return [];
+  var q = state.search.trim().toLowerCase();
+  return state.doc.tasks.filter(function (t) {
+    if (!t || typeof t !== 'object') return false;
+    if (!state.showClosed && isClosed(t)) return false;
+    if (!q) return true;
+    var hay = [t.id, t.title, t.details, t.result, t.assigned_agent, t.agent_rationale]
+      .filter(Boolean).join(' ').toLowerCase();
+    return hay.indexOf(q) !== -1;
+  });
+}
+
+function renderSummary() {
+  var box = $('summary');
+  if (!state.doc) { box.innerHTML = ''; return; }
+  var all = state.doc.tasks;
+  var open = all.filter(function (t) { return t && !isClosed(t); }).length;
+  var overdue = all.filter(function (t) { return t && isOverdue(t); }).length;
+  var attention = all.filter(function (t) { return t && t.status === 'needs_new_agent'; }).length;
+  var html = '<span class="chip">' + all.length + ' total</span>' +
+             '<span class="chip">' + open + ' open</span>';
+  if (overdue) html += '<span class="chip overdue">' + overdue + ' overdue</span>';
+  if (attention) html += '<span class="chip" style="border-color:var(--alert);color:var(--alert);background:var(--alert-bg)">' +
+                          attention + ' need a new team member</span>';
+  if (state.doc.updated_at) {
+    html += '<span class="chip">file updated ' + esc(formatDateTime(state.doc.updated_at)) + '</span>';
+  }
+  box.innerHTML = html;
+}
+
+function renderAttention() {
+  var box = $('attention');
+  if (!state.doc) { box.hidden = true; box.innerHTML = ''; return; }
+  var flagged = state.doc.tasks.filter(function (t) { return t && t.status === 'needs_new_agent'; });
+  if (!flagged.length) { box.hidden = true; box.innerHTML = ''; return; }
+
+  var items = flagged.map(function (t) {
+    var link = t.issue_number
+      ? ' &mdash; <a href="' + esc(ISSUE_URL_BASE + encodeURIComponent(t.issue_number)) +
+        '" rel="noopener" target="_blank">issue #' + esc(t.issue_number) + '</a>'
+      : '';
+    return '<li><strong>' + esc(t.title) + '</strong> <span class="mono">(' + esc(t.id) + ')</span>' + link + '</li>';
+  }).join('');
+
+  box.hidden = false;
+  box.className = 'callout-alert';
+  box.innerHTML = '<h2>' + flagged.length + (flagged.length === 1 ? ' task needs' : ' tasks need') +
+    ' a new team member</h2>' +
+    '<p style="margin:0">No existing agent fitted these. Define a new agent in ' +
+    '<span class="mono">.claude/agents/</span>, then set the task back to <span class="mono">pending</span>.</p>' +
+    '<ul>' + items + '</ul>';
+}
+
+function taskCardHtml(task) {
+  var overdue = isOverdue(task);
+  var attention = task.status === 'needs_new_agent';
+  var closed = isClosed(task);
+
+  var classes = ['task'];
+  if (attention) classes.push('is-attention');
+  else if (overdue) classes.push('is-overdue');
+  if (closed) classes.push('is-closed');
+
+  var status = typeof task.status === 'string' ? task.status : 'unknown';
+  var statusClass = /^[a-z_]+$/.test(status) ? status : 'pending';
+
+  var chips = ['<span class="chip mono">' + esc(task.id) + '</span>'];
+
+  if (task.due_at) {
+    chips.push('<span class="chip' + (overdue ? ' overdue' : '') + '">' +
+      (overdue ? 'OVERDUE ' : 'Due ') + esc(formatDateTime(task.due_at)) +
+      ' (' + esc(relativeText(task.due_at)) + ')</span>');
+  }
+  if (task.type === 'monitor') {
+    var iv = Number(task.check_interval_hours);
+    if (!isFinite(iv) || iv <= 0) iv = DEFAULT_MONITOR_INTERVAL_HOURS;
+    chips.push('<span class="chip">every ' + esc(iv) + 'h</span>');
+    chips.push('<span class="chip' + (monitorIsDue(task) ? ' due-soon' : '') + '">' +
+      (task.last_checked_at ? 'checked ' + esc(relativeText(task.last_checked_at)) : 'never checked') + '</span>');
+  }
+  if (task.assigned_agent) {
+    chips.push('<span class="chip">agent: ' + esc(task.assigned_agent) + '</span>');
+  }
+  if (task.created_at) {
+    chips.push('<span class="chip">added ' + esc(formatDateTime(task.created_at)) + '</span>');
+  }
+
+  var html = '<article class="' + classes.join(' ') + '" data-id="' + esc(task.id) + '">';
+  html += '<div class="task-head"><h3 class="task-title">' + esc(task.title || '(untitled)') + '</h3>' +
+          '<span class="badge ' + esc(statusClass) + '">' + esc(status.replace(/_/g, ' ')) + '</span></div>';
+  html += '<div class="chips">' + chips.join('') + '</div>';
+
+  if (task.details) html += '<p class="details">' + esc(task.details) + '</p>';
+
+  if (task.agent_rationale) {
+    html += '<div class="block"><h4>Why this agent</h4><div class="result-body">' +
+            esc(task.agent_rationale) + '</div></div>';
+  }
+  if (task.result) {
+    html += '<div class="block"><h4>Result</h4><div class="result-body">' + esc(task.result) + '</div></div>';
+  }
+
+  var links = [];
+  if (task.issue_number !== null && task.issue_number !== undefined && task.issue_number !== '') {
+    links.push('<a href="' + esc(ISSUE_URL_BASE + encodeURIComponent(task.issue_number)) +
+      '" rel="noopener" target="_blank">Issue #' + esc(task.issue_number) + '</a>');
+  }
+  var repo = safeUrl(task.repo_url);
+  if (repo) links.push('<a href="' + esc(repo) + '" rel="noopener noreferrer" target="_blank">Repo</a>');
+  if (links.length) html += '<div class="links">' + links.join('') + '</div>';
+
+  if (!closed) {
+    var disabled = (!state.token || state.busy) ? ' disabled' : '';
+    html += '<div class="task-actions">' +
+      '<button class="small" type="button" data-action="done" data-id="' + esc(task.id) + '"' + disabled + '>Mark done</button>' +
+      '<button class="small danger" type="button" data-action="cancelled" data-id="' + esc(task.id) + '"' + disabled + '>Cancel</button>' +
+      '</div>';
+  }
+
+  html += '</article>';
+  return html;
+}
+
+function renderTasks() {
+  var box = $('task-list');
+
+  if (!state.doc) {
+    box.innerHTML = '<div class="panel"><p style="margin:0">Tasks could not be loaded. ' +
+      'Fix the problem above and press Refresh.</p></div>';
+    return;
+  }
+
+  var tasks = visibleTasks();
+  var hasAny = state.doc.tasks.length > 0;
+
+  if (!hasAny) {
+    box.innerHTML = '<div class="panel"><p style="margin:0">No tasks yet. Add the first one above.</p></div>';
+    return;
+  }
+
+  if (!tasks.length) {
+    box.innerHTML = '<div class="panel"><p style="margin:0">Nothing matches the current filter. ' +
+      'There ' + (state.doc.tasks.length === 1 ? 'is 1 task' : 'are ' + state.doc.tasks.length + ' tasks') +
+      ' in the file &mdash; clear the search box, or tick "Show done &amp; cancelled".</p></div>';
+    return;
+  }
+
+  var html = '';
+  TYPE_IDS.forEach(function (typeId) {
+    var meta = typeMeta(typeId);
+    var group = tasks.filter(function (t) { return t.type === typeId; });
+
+    /* Sort: attention first, then overdue, then oldest-first within the group. */
+    group.sort(function (a, b) {
+      var aw = (a.status === 'needs_new_agent' ? 2 : 0) + (isOverdue(a) ? 1 : 0);
+      var bw = (b.status === 'needs_new_agent' ? 2 : 0) + (isOverdue(b) ? 1 : 0);
+      if (aw !== bw) return bw - aw;
+      return (parseIso(a.created_at) || 0) - (parseIso(b.created_at) || 0);
+    });
+
+    html += '<section class="group">';
+    html += '<h2 class="group-head">' + esc(meta.label) +
+            '<span class="count">' + group.length + '</span></h2>';
+    html += '<p class="group-blurb">' + esc(meta.blurb) + '</p>';
+    html += group.length
+      ? group.map(taskCardHtml).join('')
+      : '<p class="group-empty">Nothing here.</p>';
+    html += '</section>';
+  });
+
+  /* Anything with an unrecognised type still has to be visible. */
+  var unknown = tasks.filter(function (t) { return TYPE_IDS.indexOf(t.type) === -1; });
+  if (unknown.length) {
+    html += '<section class="group"><h2 class="group-head">Unrecognised type' +
+      '<span class="count">' + unknown.length + '</span></h2>' +
+      '<p class="group-blurb">These tasks have a type outside the five known ones.</p>' +
+      unknown.map(taskCardHtml).join('') + '</section>';
+  }
+
+  box.innerHTML = html;
+}
+
+function renderFormAvailability() {
+  var canWrite = !!state.token && !!state.doc && !state.corrupt && !state.busy;
+  $('submit-btn').disabled = !canWrite;
+  var note = $('form-note');
+  if (state.busy) note.textContent = 'Saving…';
+  else if (!state.token) note.textContent = 'Read-only: add a token in Settings to create tasks.';
+  else if (state.corrupt) note.textContent = 'Saving is disabled until tasks.json is valid JSON again.';
+  else if (!state.doc) note.textContent = 'Waiting for tasks to load.';
+  else if (state.fileMissing) note.textContent = 'tasks.json does not exist yet - saving will create it.';
+  else note.textContent = '';
+}
+
+function render() {
+  renderTokenState();
+  renderFormAvailability();
+  renderAttention();
+  renderSummary();
+  renderTasks();
+  $('refresh-btn').disabled = state.loading || state.busy;
+}
+
+/* ==================================================================
+   Form handling
+   ================================================================== */
+function syncTypeFields() {
+  var type = $('f-type').value;
+  var needsDue = (type === 'do_later' || type === 'reminder');
+  $('due-field').hidden = !needsDue;
+  $('interval-field').hidden = (type !== 'monitor');
+  $('type-blurb').textContent = typeMeta(type).blurb;
+  $('due-hint').textContent = needsDue
+    ? 'Your local time, stored as UTC. Without a due date the hourly agent will not pick this task up on its own.'
+    : 'Your local time; stored as UTC.';
+}
+
+function readDraft() {
+  var title = $('f-title').value.trim();
+  if (!title) throw new Error('A title is required.');
+
+  var type = $('f-type').value;
+  if (TYPE_IDS.indexOf(type) === -1) throw new Error('Pick one of the five task types.');
+
+  var dueAt = null;
+  if (type === 'do_later' || type === 'reminder') {
+    var raw = $('f-due').value;
+    if (raw) {
+      var ms = Date.parse(raw); // datetime-local is interpreted as local time
+      if (isNaN(ms)) throw new Error('The due date could not be read. Pick it again.');
+      dueAt = new Date(ms).toISOString();
+    }
+  }
+
+  var interval = null;
+  if (type === 'monitor') {
+    var rawInterval = $('f-interval').value.trim();
+    if (rawInterval === '') {
+      interval = DEFAULT_MONITOR_INTERVAL_HOURS;
+    } else {
+      interval = Number(rawInterval);
+      if (!isFinite(interval) || interval <= 0) {
+        throw new Error('Check interval must be a positive number of hours.');
+      }
+    }
+  }
+
+  var repoUrl = $('f-repo').value.trim();
+  if (repoUrl && !safeUrl(repoUrl)) {
+    throw new Error('Repo URL must start with http:// or https://, or be left empty.');
+  }
+
+  return {
+    title: title,
+    details: $('f-details').value.trim(),
+    type: type,
+    due_at: dueAt,
+    check_interval_hours: interval,
+    repo_url: repoUrl || null
+  };
+}
+
+function resetForm() {
+  $('f-title').value = '';
+  $('f-details').value = '';
+  $('f-due').value = '';
+  $('f-interval').value = '';
+  $('f-repo').value = '';
+  syncTypeFields();
+}
+
+function setBusy(busy) {
+  state.busy = busy;
+  render();
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+  setFormError('');
+
+  var draft;
+  try {
+    draft = readDraft();
+  } catch (e) {
+    setFormError(e.message);
+    return;
+  }
+
+  setBusy(true);
+  setStatus('Saving to GitHub…', 'info');
+
+  saveWithRetry(makeAddMutation(draft), 'Add task: ' + draft.title)
+    .then(function (doc) {
+      resetForm();
+      setStatus('Task added. tasks.json now holds ' + doc.tasks.length +
+        (doc.tasks.length === 1 ? ' task.' : ' tasks.'), 'ok');
+    })
+    .catch(function (err) {
+      setFormError(err.message);
+      setStatus(err.message, 'error');
+    })
+    .then(function () { setBusy(false); });
+}
+
+function handleTaskAction(event) {
+  var btn = event.target.closest ? event.target.closest('button[data-action]') : null;
+  if (!btn) return;
+
+  var action = btn.getAttribute('data-action');
+  var id = btn.getAttribute('data-id');
+  if (!id || (action !== 'done' && action !== 'cancelled')) return;
+
+  var verb = action === 'done' ? 'Mark as done' : 'Cancel';
+  if (!window.confirm(verb + ': ' + id + '?')) return;
+
+  setBusy(true);
+  setStatus('Saving to GitHub…', 'info');
+
+  saveWithRetry(makeStatusMutation(id, action), 'Set ' + id + ' to ' + action + ' via dashboard')
+    .then(function () { setStatus('Task ' + id + ' is now ' + action + '.', 'ok'); })
+    .catch(function (err) { setStatus(err.message, 'error'); })
+    .then(function () { setBusy(false); });
+}
+
+/* ==================================================================
+   Token UI
+   ================================================================== */
+function handleTokenSave() {
+  var input = $('token-input');
+  var value = input.value.trim();
+  if (!value) { setStatus('Paste a token first, then press Save token.', 'warn'); return; }
+
+  if (!writeStoredToken(value)) {
+    setStatus('This browser refused to store the token (private mode or storage disabled). ' +
+      'The token will work until you reload the page.', 'warn');
+  }
+  state.token = value;
+  input.value = ''; // never leave the raw token sitting in the DOM
+  render();
+  setStatus('Token saved in this browser. Checking it against GitHub…', 'info');
+  loadTasks({ silent: true }).then(function () {
+    if (state.loadError) setStatus(state.loadError, 'error');
+    else setStatus('Token works. Saving tasks is enabled.', 'ok');
+  });
+}
+
+function handleTokenClear() {
+  writeStoredToken(null);
+  state.token = null;
+  $('token-input').value = '';
+  render();
+  setStatus('Token cleared from this browser. The dashboard is read-only again. ' +
+    'If it may have leaked, revoke it at github.com as well.', 'warn');
+}
+
+/* ==================================================================
+   Boot
+   ================================================================== */
+function init() {
+  state.token = readStoredToken();
+
+  var ok = selfTest();
+  $('diagnostics').textContent = ok
+    ? 'Diagnostics: UTF-8 base64 round-trip OK (verified with a Thai test string), so Thai text is saved and read back unchanged.'
+    : 'Diagnostics: WARNING - the UTF-8 base64 round-trip failed in this browser. Do not save non-English text until this is fixed.';
+  if (!ok) {
+    setStatus('This browser failed the UTF-8 encoding self-test. Saving is unsafe - use a current browser.', 'error');
+  }
+
+  $('settings-btn').addEventListener('click', function () {
+    var panel = $('settings-panel');
+    panel.hidden = !panel.hidden;
+    this.setAttribute('aria-expanded', String(!panel.hidden));
+    if (!panel.hidden) $('token-input').focus();
+  });
+  $('refresh-btn').addEventListener('click', function () { loadTasks(); });
+  $('token-save').addEventListener('click', handleTokenSave);
+  $('token-clear').addEventListener('click', handleTokenClear);
+  $('f-type').addEventListener('change', syncTypeFields);
+  $('task-form').addEventListener('submit', handleSubmit);
+  $('task-list').addEventListener('click', handleTaskAction);
+  $('f-search').addEventListener('input', function () { state.search = this.value; renderTasks(); });
+  $('f-show-closed').addEventListener('change', function () { state.showClosed = this.checked; renderTasks(); });
+
+  syncTypeFields();
+  render();
+  loadTasks();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
