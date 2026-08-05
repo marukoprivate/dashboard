@@ -1,5 +1,29 @@
 {
   "version": 1,
-  "updated_at": "2026-08-05T00:00:00Z",
-  "tasks": []
+  "updated_at": "2026-08-05T11:56:06.370Z",
+  "tasks": [
+    {
+      "id": "t-20260805-001",
+      "title": "ทดสอบระบบ — throwaway test task",
+      "details": "",
+      "type": "do_now",
+      "status": "pending",
+      "created_at": "2026-08-05T11:56:06.370Z",
+      "created_by": "web",
+      "due_at": null,
+      "check_interval_hours": null,
+      "last_checked_at": null,
+      "assigned_agent": null,
+      "agent_rationale": null,
+      "repo_url": null,
+      "result": null,
+      "issue_number": null,
+      "history": [
+        {
+          "at": "2026-08-05T11:56:06.370Z",
+          "event": "created via web"
+        }
+      ]
+    }
+  ]
 }
