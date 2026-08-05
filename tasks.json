@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "updated_at": "2026-08-05T11:56:06.370Z",
+  "updated_at": "2026-08-05T12:48:51.979Z",
   "tasks": [
     {
       "id": "t-20260805-001",
       "title": "ทดสอบระบบ — throwaway test task",
       "details": "",
       "type": "do_now",
-      "status": "pending",
+      "status": "cancelled",
       "created_at": "2026-08-05T11:56:06.370Z",
       "created_by": "web",
       "due_at": null,
@@ -22,6 +22,10 @@
         {
           "at": "2026-08-05T11:56:06.370Z",
           "event": "created via web"
+        },
+        {
+          "at": "2026-08-05T12:48:51.978Z",
+          "event": "marked cancelled via web"
         }
       ]
     }
